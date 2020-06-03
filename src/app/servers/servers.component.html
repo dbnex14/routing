@@ -1,7 +1,17 @@
 <div class="row">
   <div class="col-xs-12 col-sm-4">
     <div class="list-group">
+      <!-- So, we pass id of server and description 'edit' so we know what we want to do here.
+           We then use queryParams directive to pass query parameters as key:value javascript object.
+           Note we could pass more query params here by separating them with a comma. 
+           Similarly we have fragment property which would be separated by # sign in the URL.
+           Note that you can have only one fragment though, hence 'fragment', not 'fragments'.
+           You can use either [fragment]="'loading'" or fragment="loading" for that and the
+           URL will look like 'http://localhost:4200/servers/5/edit?allowEdit=1#loading'.  -->
       <a
+        [routerLink]="['/servers', 5, 'edit']"
+        [queryParams]="{allowEdit: '1'}"
+        fragment="loading"
         href="#"
         class="list-group-item"
         *ngFor="let server of servers">
@@ -10,6 +20,7 @@
     </div>
   </div>
   <div class="col-xs-12 col-sm-4">
+    <button class="btn btn-primary" (click)="onReload()">Reload Page</button>
     <app-edit-server></app-edit-server>
     <hr>
     <app-server></app-server>
