@@ -9,8 +9,8 @@
            You can use either [fragment]="'loading'" or fragment="loading" for that and the
            URL will look like 'http://localhost:4200/servers/5/edit?allowEdit=1#loading'.  -->
       <a
-        [routerLink]="['/servers', 5, 'edit']"
-        [queryParams]="{allowEdit: '1'}"
+        [routerLink]="['/servers', server.id]"
+        [queryParams]="{allowEdit: server.id === 3 ? '1': '0'}"  
         fragment="loading"
         href="#"
         class="list-group-item"
@@ -20,10 +20,11 @@
     </div>
   </div>
   <div class="col-xs-12 col-sm-4">
-    <button class="btn btn-primary" (click)="onReload()">Reload Page</button>
+    <router-outlet></router-outlet>
+    <!-- <button class="btn btn-primary" (click)="onReload()">Reload Page</button>
     <app-edit-server></app-edit-server>
     <hr>
-    <app-server></app-server>
+    <app-server></app-server> -->
   </div>
 </div>
 
