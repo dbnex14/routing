@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { ServersService } from '../servers.service';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import { ActivatedRoute, Params, Router, Data } from '@angular/router';
 
 @Component({
   selector: 'app-server',
@@ -16,16 +16,27 @@ export class ServerComponent implements OnInit {
     , private router: Router) { }
 
   ngOnInit() {
-    // get the passed in server id, note htat we use snapshot
-    // here which is not reactive.  We use + to convert to number
-    const id = +this.route.snapshot.params['id']; // note this is string '1' not 1 numeric
-    this.server = this.serversService.getServer(id);
+    // we comment ways of gettings server from params below as we changed to use
+    // resolver to preload server data before this component is loaded, so we get it
+    // from data on this route and we use observable and subscribe because the server
+    // info may change while we are on this page.
+    this.route.data
+      .subscribe(
+        (data: Data) => {
+          this.server = data['server'];  //this 'server' is what we named property in the route map
+        }
+      );
 
-    // if you wanted to react to changes, we then need to 
-    // subscribe to observable params
-    this.route.params.subscribe((params: Params) => {
-      this.server = this.serversService.getServer(+params['id']); // note use of + to convert to number
-    });
+    // // get the passed in server id, note htat we use snapshot
+    // // here which is not reactive.  We use + to convert to number
+    // const id = +this.route.snapshot.params['id']; // note this is string '1' not 1 numeric
+    // this.server = this.serversService.getServer(id);
+
+    // // if you wanted to react to changes, we then need to 
+    // // subscribe to observable params
+    // this.route.params.subscribe((params: Params) => {
+    //   this.server = this.serversService.getServer(+params['id']); // note use of + to convert to number
+    // });
   }
 
   onEdit() {

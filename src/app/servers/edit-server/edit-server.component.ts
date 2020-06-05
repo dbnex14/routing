@@ -1,21 +1,26 @@
 import { Component, OnInit } from '@angular/core';
 
 import { ServersService } from '../servers.service';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
+import { CanComponentDeactivate } from './can-deactivate-guard.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-edit-server',
   templateUrl: './edit-server.component.html',
   styleUrls: ['./edit-server.component.css']
 })
-export class EditServerComponent implements OnInit {
+export class EditServerComponent implements OnInit, CanComponentDeactivate {
   server: {id: number, name: string, status: string};
   serverName = '';
   serverStatus = '';
   allowEdit = false;
+  // we want to prevent (or at least ask) user from accidentally navigating
+  // away if changes are not saved.
+  changesSaved = false;
 
   constructor(private serversService: ServersService
-    , private route: ActivatedRoute) { }
+    , private route: ActivatedRoute, private router: Router) { }
 
   ngOnInit() {
     // in order to retrieve our query params and fragment, we inject route in c-tor.  And
@@ -39,9 +44,10 @@ export class EditServerComponent implements OnInit {
           this.allowEdit = queryParams['allowEdit'] === '1';  // if equal '1', allow editing
         }
       ));
-    console.log("Framgment Observable: " + this.route.fragment.subscribe());
 
-    this.server = this.serversService.getServer(1);
+    const id = +this.route.snapshot.params['id'];
+    this.server = this.serversService.getServer(id);
+
     this.serverName = this.server.name;
     this.serverStatus = this.server.status;
   }
@@ -49,6 +55,26 @@ export class EditServerComponent implements OnInit {
   onUpdateServer() {
     // this is using our serversService to get the server id, name, status and update server.
     this.serversService.updateServer(this.server.id, {name: this.serverName, status: this.serverStatus});
+    this.changesSaved = true;
+    // after the changes are saved, navigate back one level up to the last loaded server
+    // relative to the currently active route
+    this.router.navigate(['../'], {relativeTo: this.route});
+
+  }
+
+  // here we provide the actual logic checking if we can leave this component or not.
+  // this logic is called from the CanDeactivateGuardService.
+  canDeactivate(): boolean | Observable<boolean> | Promise<boolean> {
+    if (!this.allowEdit) {
+      return true;
+    } 
+
+    if ((this.serverName !== this.server.name || this.serverStatus !== this.server.status)
+      && !this.changesSaved) {
+        return confirm("Do you want to discard the changes?");
+      } else {
+        return true;
+      }
   }
 
 }
